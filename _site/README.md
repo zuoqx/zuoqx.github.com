@@ -1,8 +1,6 @@
-#一点点说明
+#说明
 
-这是[mukosame.github.io](http://mukosame.github.io)的示例代码，第一个能用的，干净的，完全可以作为模板和基础的版本
-* 感谢来自于beiyuu的设计(http://beiyuu.com/)
-* 希望你喜欢
+这是我的博客站点[zuoqx.github.io](http://zuoqx.github.io),主要用于写技术博客，以及发布一些生活感悟。
+* 感谢[mukosame.github.io](http://mukosame.github.io)
 * 欢迎star
 * 欢迎fork
-* Happy hacking ^_^
