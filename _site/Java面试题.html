@@ -45,32 +45,29 @@
     <div class="entry">
         <h1 class="entry-title"><a href="/Java%E9%9D%A2%E8%AF%95%E9%A2%98" title="Java面试题">Java面试题</a></h1>
         <p class="entry-date">2016-04-09</p>
-        <h2 id="switchstring">1.Switch能否用string做参数？</h2>
-
-<pre><code>     switch的参数列表中，必须是char、byte、short、int这样的整型，以及enum枚举类型，在Java7中，支持String类型了。 但主要，不支持浮点型，以及long、double类型。 ## 2. equals与==的区别：
-
-      1.  基本数据类型，由于直接存取的是值本身，所以使用“==”，比较的是值本身的大小；equals方法不适合基本类型；
-      2.  对象类型，==和!=比较的是对象的引用是否相同，即两个对象是否指向同一块内存空间；而equals则比较的是两个对象的实际内容是否相同。这是类共有的一个方法，equals的默认行为是比较引用的，注意要在自己的类里重写。String类已经重写了这个方法，它的equals方法实际比较的是对象内容是否相同。 ## 3. Object有哪些公用方法？
+        <h2 id="switchstring">1.Switch能否用string做参数</h2>
+<pre><code>switch的参数列表中，必须是char、byte、short、int这样的整型，以及enum枚举类型，在Java7中，支持String类型了。但是，不支持浮点型，以及long、double类型。
 </code></pre>
 
-<p>equals: 比较两个对象内容是否相等，如果重写了该方法，同时要重写hashCode方法：相同的对象实例，必须有相同的hash code，尤其是作为HashMap的键的对象
-hashCode:  返回该对象的hash值
-toString:  打印适合阅读的调试信息
-clone:  进行对象拷贝
-getClass:  返回和当前对象相关的Class对象
-notify,notifyall,wait:  都是用来对给定对象进行线程同步的，notify通知等待当前对象锁的线程唤醒
-## 4. Java引用类型及使用场景：
-              对象可获得的（reachable）:是指此对象，可以在程序中的某处找到。如果一个对象是“可获得的”，垃圾回收器就不能释放它，因为程序仍然使                                                          用它。反之，程序无法使用该对象，所以将其回收是安全的。        <br />
-              强引用：普通引用，即没有见过Reference对象包装过的引用。如果垃圾回收器发现某个对象通过普通引用是可获得的，该对象就不会释放。
-              SoftReference：当内存不足时，通过SoftReference包装的对象，GC会选择回收该对象；
-              WeakReference：GC运行的时候，WeakReference包装的对象会被回收
-              PhantomReference：和ReferenceQueue联合使用
-          使用场景：想继续持有某个对象的引用，希望程序以后还可以访问该对象，但在内存不足是，垃圾回收器可以回收它，这时就用Reference类，作为                           程序和普通引用之间的桥梁（大理）。例如：
-                         利用软引用和弱引用解决OOM问题：用一个HashMap来保存图片的路径和相应图片对象关联的软引用之间的映射关系，在内存不足                               时，JVM会自动回收这些缓存图片对象所占用的空间，从而有效地避免了OOM的问题
-                         通过软可及对象重获方法实现Java对象的高速缓存:比如我们创建了一Employee的类，如果每次需要查询一个雇员的信息。哪怕是几秒                          中之前刚刚查询过的，都要重新构建一个实例，这是需要消耗很多时间的。我们可以通过软引用和 HashMap 的结合，先是保存引用方                          面：以软引用的方式对一个Employee对象的实例进行引用并保存该引t用到HashMap 上，key 为此雇员的 id，value为这个对象的软                         引用，另一方面是取出引用，缓存中是否有该Employee实例的软引用，如果有，从软引用中取得。如果没有软引用，或者从软引用中得                         到的实例是null，重新构建一个实例，并保存对这个新建实例的软引用.
-## 5. String、StringBuffer与StringBuilder的区别</p>
+<h2 id="equals">2. equals与==的区别：</h2>
+<pre><code>**1.**  基本数据类型，由于直接存取的是值本身，所以使用“==”，比较的是值本身的大小；equals方法不适合基本类型；
+**2.**  对象类型，==和!=比较的是对象的引用是否相同，即两个对象是否指向同一块内存空间；而equals则比较的是两个对象的实际内容是否相同。这是类共有的一个方法，equals的默认行为是比较引用的，注意要在自己的类里重写。String类已经重写了这个方法，它的equals方法实际比较的是对象内容是否相同。 ## 3. Object有哪些公用方法？
+**equals:** 比较两个对象内容是否相等，如果重写了该方法，同时要重写hashCode方法：相同的对象实例，必须有相同的hash code，尤其是作为HashMap的键的对象
+**hashCode:**  返回该对象的hash值
+**toString:**  打印适合阅读的调试信息
+**clone:**  进行对象拷贝
+**getClass:**  返回和当前对象相关的Class对象
+**notify,notifyall,wait:**   都是用来对给定对象进行线程同步的，notify通知等待当前对象锁的线程唤醒 ## 4. Java引用类型及使用场景：
+对象可获得的（reachable）:是指此对象，可以在程序中的某处找到。如果一个对象是“可获得的”，垃圾回收器就不能释放它，因为程序仍然使                                                          用它。反之，程序无法使用该对象，所以将其回收是安全的。          
+          强引用：普通引用，即没有见过Reference对象包装过的引用。如果垃圾回收器发现某个对象通过普通引用是可获得的，该对象就不会释放。
+          SoftReference：当内存不足时，通过SoftReference包装的对象，GC会选择回收该对象；
+          WeakReference：GC运行的时候，WeakReference包装的对象会被回收
+          PhantomReference：和ReferenceQueue联合使用
+      使用场景：想继续持有某个对象的引用，希望程序以后还可以访问该对象，但在内存不足是，垃圾回收器可以回收它，这时就用Reference类，作为                           程序和普通引用之间的桥梁（大理）。例如：
+                     利用软引用和弱引用解决OOM问题：用一个HashMap来保存图片的路径和相应图片对象关联的软引用之间的映射关系，在内存不足                               时，JVM会自动回收这些缓存图片对象所占用的空间，从而有效地避免了OOM的问题
+                     通过软可及对象重获方法实现Java对象的高速缓存:比如我们创建了一Employee的类，如果每次需要查询一个雇员的信息。哪怕是几秒                          中之前刚刚查询过的，都要重新构建一个实例，这是需要消耗很多时间的。我们可以通过软引用和 HashMap 的结合，先是保存引用方                          面：以软引用的方式对一个Employee对象的实例进行引用并保存该引t用到HashMap 上，key 为此雇员的 id，value为这个对象的软                         引用，另一方面是取出引用，缓存中是否有该Employee实例的软引用，如果有，从软引用中取得。如果没有软引用，或者从软引用中得                         到的实例是null，重新构建一个实例，并保存对这个新建实例的软引用. ## 5. String、StringBuffer与StringBuilder的区别
 
-<pre><code>          String：String类是用final修饰，意味着不可变，即不能继承，它的方法不能重写。
+          String：String类是用final修饰，意味着不可变，即不能继承，它的方法不能重写。
                        1&gt; 当需要改变字符串的内容时，String类的方法都会返回一个新的String对象，原来的对象没有改变。其实，String对象作为方法的                                参数时，传递的是引用的一个拷贝。
                        2&gt; 如果内容没有改变，String方法只是返回指向原对象的引用而已
                        3&gt; String中的“+”与“+=”是Java中仅有的两个重载过的操作符（Java不允许重载任何操作符），用来连接两个字符串。其底层的实现                                 是，每次“+”时，底层都会创建一个StringBuilder类用来实现该操作。
