@@ -1,0 +1,6 @@
+_site/
+*.swp
+*.~vsd
+\#*\#
+*~
+Gemfile.lock
