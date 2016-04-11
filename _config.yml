@@ -5,7 +5,7 @@ highlighter: 'pygments'
 #paginate: 8
 permalink: /:title
 
-title: My Blog
+title: 天道酬勤
 url: http://zuoqx.github.io
 feed: /atom.xml
 author_info: <a href="http://zuoqx.github.io/">Zuoqx</a>
