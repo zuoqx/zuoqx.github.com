@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>Java面试题 | 天道酬勤</title>
+    <meta name="author" content="Mukosame" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about Mukosame" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/atom.xml" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">Mukosame</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/Mukosame/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+            <a href="http://www.douban.com/people/23026489/" target="_blank" style="text-align:center;"><img src="http://www.douban.com/favicon.ico" alt="" width="22"/></a>
+            <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/Java%E9%9D%A2%E8%AF%95%E9%A2%98" title="Java面试题">Java面试题</a></h1>
+        <p class="entry-date">2016-04-09</p>
+        <h3 id="switchstring">1.Switch能否用string做参数</h3>
+<pre><code>switch的参数列表中，必须是char、byte、short、int这样的整型，以及enum枚举类型，在Java7中，支持String类型了。但是，不支持浮点型，以及long、double类型。
+</code></pre>
+
+<h3 id="equals">2. equals与==的区别：</h3>
+<pre><code>基本数据类型，由于直接存取的是值本身，所以使用“==”，比较的是值本身的大小；equals方法不适合基本类型；
+对象类型，==和!=比较的是对象的引用是否相同，即两个对象是否指向同一块内存空间；而equals则比较的是两个对象的实际内容是否相同。这是类共有的一个方法，equals的默认行为是比较引用的，注意要在自己的类里重写。String类已经重写了这个方法，它的equals方法实际比较的是对象内容是否相同。
+</code></pre>
+
+<h3 id="object">3. Object有哪些公用方法？</h3>
+<pre><code>equals: 比较两个对象内容是否相等，如果重写了该方法，同时要重写hashCode方法：相同的对象实例，必须有相同的hash code，尤其是作为HashMap的键的对象
+hashCode:  返回该对象的hash值
+toString:  打印适合阅读的调试信息
+clone:  进行对象拷贝
+getClass:  返回和当前对象相关的Class对象
+notify,notifyall,wait:   都是用来对给定对象进行线程同步的，notify通知等待当前对象锁的线程唤醒
+</code></pre>
+
+<h3 id="java">4. Java引用类型及使用场景：</h3>
+<pre><code>对象可获得的（reachable）: 是指此对象，可以在程序中的某处找到。如果一个对象是“可获得的”，垃圾回收器就不能释放它，因为程序仍然使                   用它。反之，程序无法使用该对象，所以将其回收是安全的。          
+强引用：普通引用，即没有见过Reference对象包装过的引用。如果垃圾回收器发现某个对象通过普通引用是可获得的，该对象就不会释放。
+SoftReference：当内存不足时，通过SoftReference包装的对象，GC会选择回收该对象；
+WeakReference：GC运行的时候，WeakReference包装的对象会被回收
+PhantomReference：和ReferenceQueue联合使用
+使用场景：想继续持有某个对象的引用，希望程序以后还可以访问该对象，但在内存不足是，垃圾回收器可以回收它，这时就用Reference类，作为程序和普通引用之间的桥梁（大理）。例如：利用软引用和弱引用解决OOM问题：用一个HashMap来保存图片的路径和相应图片对象关联的软引用之间的映射关系，在内存不足时，JVM会自动回收这些缓存图片对象所占用的空间，从而有效地避免了OOM的问题通过软可及对象重获方法实现Java对象的高速缓存:比如我们创建了一Employee的类，如果每次需要查询一个雇员的信息。哪怕是几秒 中之前刚刚查询过的，都要重新构建一个实例，这是需要消耗很多时间的。我们可以通过软引用和 HashMap 的结合，先是保存引用方                          面：以软引用的方式对一个Employee对象的实例进行引用并保存该引t用到HashMap 上，key 为此雇员的 id，value为这个对象的软                         引用，另一方面是取出引用，缓存中是否有该Employee实例的软引用，如果有，从软引用中取得。如果没有软引用，或者从软引用中得                         到的实例是null，重新构建一个实例，并保存对这个新建实例的软引用.
+</code></pre>
+
+<h3 id="stringstringbufferstringbuilder">5. String、StringBuffer与StringBuilder的区别</h3>
+<blockquote>
+  <pre><code>**String：**String类是用final修饰，意味着不可变，即不能继承，它的方法不能重写。当需要改变字符串的内容时，String类的方法都会返回一个新的String对象，原来的对象没有改变。其实，String对象作为方法的参数时，传递的是引用的一个拷贝。如果内容没有改变，String方法只是返回指向原对象的引用而已.  
+ String中的“+”与“+=”是Java中仅有的两个重载过的操作符（Java不允许重载任何操作符），用来连接两个字符串。其底层的实现是，每次“+”时，底层都会创建一个StringBuilder类用来实现该操作。 &gt;     一个String对象后面跟一个“+”，而后的对象不是String，编译器会试图会调用对象的toString()方法将这个对象转换成String，如果这样调用“object” + this，则会出现无意识的递归调用toString()方法。 &gt;    StringBuiler是Java 5引入的，之前Java用的是StringBuffer，而StringBuffer是线程安全的，实现了线程同步，因此开销比较大，效率没有StringBuiler高。
+</code></pre>
+</blockquote>
+
+<h3 id="overrideoverload">6. Override和Overload的含义区别</h3>
+<pre><code>Overload方法：重载，方法名相同，参数列表不同（包括参数类型、参数个数、以及参数列表的顺序都不用）的方法实现。
+类的构造函数是一种特殊的方法重载，只不过默认的构造函数是编译器提供的，构造函数是编译器帮忙调用的
+不能根据方法的返回值来区分重载方法，即方法返回值类型也必须相同
+基本数据类型作为参数的重载方法，参数会有向上(向下)转型的过程，但char类型会自动转型成int型Override方法：重写，在子类继承父类的时候子，使用与基类完全相同的方法名、参数列表和方法返回值，覆盖基类的方法，当子类在调用这一 函数时自动调用子类的方法，而父类方法相当于被覆盖（重写）了。
+</code></pre>
+
+<h3 id="section">7. 抽象类和接口的区别</h3>
+<pre><code>一个类只能继承单个类，但是可以实现多个接口强调特定功能的实现，而抽象类强调所属关系抽象类中的所有方法并不一定要是抽象的，你可以选择在抽象类中实现一些基本的方法。而接口要求所有的方法都必须是抽象的
+</code></pre>
+
+<h3 id="xmldomsaxpull">8.解析XML的几种方式的原理与特点：DOM、SAX、PULL</h3>
+<blockquote>
+  <p>DOM：消耗内存：先把xml文档都读到内存中，然后再用DOM API来访问树形结构，并获取数据。这个写起来很简单，但是很消耗内存。要是数据过大，手机不够牛逼，可能手机直接死机
+SAX：解析效率高，占用内存少，基于事件驱动的：更加简单地说就是对文档进行顺序扫描，当扫描到文档(document)开始与结束、元素(element)开始与结束、文档(document)结束等地方时通知事件处理函数，由事件处理函数做相应动作，然后继续同样的扫描，直至文档结束。
+PULL：与 SAX 类似，也是基于事件驱动，我们可以调用它的next（）方法，来获取下一个解析事件（就是开始文档，结束文档，开始标签，结束标签），当处于某个元素时可以调用XmlPullParser的getAttributte()方法来获取属性的值，也可调用它的nextText()获取本节点的值。
+不同的是，在PULL解析过程中返回的是数字，且我们需要自己获取产生的事件然后做相应的操作，而不像SAX那样由处理器触发一种事件的方法，执行我们的代码。</p>
+</blockquote>
+
+<h3 id="waitsleep">9.wait()和sleep()的区别</h3>
+<pre><code>sleep来自Thread类，wait来自Object类调用sleep()方法的过程中，线程不会释放对象锁。而调用 wait 方法线程会释放对象锁sleep睡眠后不出让系统资源，wait让出系统资源其他线程可以占用CPUsleep(milliseconds)需要指定一个睡眠时间，时间一到会自动唤醒
+</code></pre>
+
+<h3 id="java-1">10.Java多态的实现原理</h3>
+<pre><code>动态绑定：在执行期间(并非编译期间）判断对象的实际类型，根据其实际类型调用相应的方法。
+多态：同一消息可以根据发送对象的不同而采用多种不同的行为方式。（发送消息就是函数调用）
+多态的意思就是同一消息可以根据发送对象的不同而采用多种不同的行为方式。（发送消息就是函数调用）
+</code></pre>
+
+<h3 id="java-2">11 . java垃圾回收与内存分配策略</h3>
+<pre><code>10.1 垃圾回收是什么？
+     释放那些不再持有引用的对象所占用的内存
+10.2 怎么判断一个对象是否需要回收
+      * 引用计数（最简单古老的方法): 指将资源（可以是对象、内存或磁盘空间等等）的被引用次数保存起来，当被引用次数变为零时就将其释放.
+      * 对象引用遍历（现在大多数 jvm 使用的方法）: 对象引用遍历从一组对象开始，沿着整个对象图上的每条链接，递归确定可到达（reachable）的对象。
+      如果某对象不能从这些根对象的一个（至少一个）到达，则将它作为垃圾收集.
+      * 引用计数缺陷：引用计数无法解决循环引用问题：假设对象A，B都已经被实例化，让A=B,B=A,除此之外这两个对象再无任何引用，此时计数器的值就永远不可能为0，
+      但是引用计数器无法通知gc回收他们  
+10.3 Java的四种引用的区别
+       * 强引用：就是直接通过new方法示例化的对象引用，如果一个对象具有强引用，它就不好被垃圾回收器回收。即使当前内存不足，JVM也不会回收它，
+                   而是抛出OutOfMemoryError错误，使程序异常终止。可以显式地将引用赋值为null，这样JVM会在合适的时候回收该对象。
+       * 软引用：采用SoftReference包装过的引用，内存充足的时候，，软引用不会被JVM回收，只有当内存不足时，软引用才会被垃圾回收器回收。
+       * 弱引用：具有弱引用的对象生命周期更短，当JVM进行垃圾回收，一旦发现弱引用对象，无论内存是否不足，弱引用都会被回收。
+        * 虚引用：顾名思义，就是形同虚设，如果一个对象仅持有虚引用，那么它相当于没有引用，在任何时候都可能被垃圾回收器回收。  
+10.4 介绍垃圾回收机制
+        * 标记回收法：遍历对象图并且记录可到达的对象，以便删除不可到达的对象，一般使用单线程工作并且可能产生内存碎片
+        * 标记-压缩回收法：前期与第一种方法相同，只是多了一步，将所有的存活对象压缩到内存的一端，这样内存碎片就可以合成一大块可再利用的内存区域，提高了内存利用率
+        * 复制回收法：把现有内存空间分成两部分，gc运行时，它把可到达对象复制到另一半空间，再清空正在使用的空间的全部对象。这种方法适用于短生存期的对象，持续复制长生存期的对象则导致效率降低。
+        * 分代回收发：把内存空间分为两个或者多个域，如年轻代和老年代，年轻代的特点是对象会很快被回收，因此在年轻代使用效率比较高的算法。当一个对象经过几次回收后依然存活，对象就会被放入称为老年的内存空间，老年代则采取标记-压缩算法  
+</code></pre>
+
+<h3 id="java-3">12. Java中堆和栈的区别</h3>
+<blockquote>
+  <p><strong>堆</strong> 一种通用的内存池，位于RAM区，用于存放所有的Java对象。 <br />
+   <em>好处</em>：编译器不需要知道，存储在堆里的对象存活多久， 在堆里分配内存比较灵活，当需要一个对象时，只需要new一个出来，当执行到这段代码的时候，会自动在堆里进行内存分配。<br />
+   <em>坏处</em>：用堆进行内存分配和清理，要比用栈时间长。</p>
+</blockquote>
+
+<blockquote>
+  <p><strong>栈</strong>    位于RAM里，存储速度仅次于寄存器，用来存储基本数据类型和Java的引用变量，以及局部变量。多线程的数据位于独立的栈里。<br />
+  <em>坏处</em>创建程序时，必须要知道存储在栈里所有数据项的生命周期，以便上下移动栈指针。</p>
+</blockquote>
+
+<h3 id="java-4">13. Java集合</h3>
+<blockquote>
+
+</blockquote>
+
+
+        <div id="disqus_container">
+            <class="comment"/>
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = '//mukosame.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+        
+        </div>
+   </div>
+   
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/Markdown%E8%AF%AD%E6%B3%95">Markdown 语法</a></li>
+        
+            <li><a href="/Java%E9%9D%A2%E8%AF%95%E9%A2%98">Java面试题</a></li>
+        
+            <li><a href="/Android%E9%9D%A2%E8%AF%95%E9%A2%98">Android 面试题</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>

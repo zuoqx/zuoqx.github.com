@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+    * Author:         BeiYuu
+    * Revised:        Mukosame
+    -->
+    <meta charset="utf-8" />
+    <title>Markdown 语法 | 天道酬勤</title>
+    <meta name="author" content="Mukosame" />
+    <meta name="renderer" content="webkit">
+    <meta name="description" content="Everything about Mukosame" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+    <link rel="stylesheet" href="/css/default.css" type="text/css" />
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="alternate" type="application/atom+xml" title="Recent Entries" href="/atom.xml" />
+    <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+</head>
+<body>
+
+    <div class="home-menu">
+        <div class="home-icon-con">
+            <a class="home-menu-icon" href="/">Mukosame</a>
+            <a class="home-follow" href="#" title="Contact Me">+</a>
+        </div>
+        <div class="home-contact">
+            <a href="https://github.com/Mukosame/" target="_blank" style="margin-left:-5px;"><img src="https://github.com/favicon.ico" alt="" width="22"/></a>
+            <a href="http://www.douban.com/people/23026489/" target="_blank" style="text-align:center;"><img src="http://www.douban.com/favicon.ico" alt="" width="22"/></a>
+            <a href="http://www.zhihu.com/people/xiang-xiao-yu-20" target="_blank" style="text-align:right"><img src="http://www.zhihu.com/favicon.ico" alt="" width="22"/></a>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="/js/prettify/prettify.css" />
+<style type="text/css">
+    body { background:#e8e8e8; }
+    @media screen and (max-width: 750px){
+        body { background:#fff; }
+    }
+    @media screen and (max-width: 1020px){
+        body { background:#fff; }
+    }
+</style>
+
+<div id="content">
+    <div class="entry">
+        <h1 class="entry-title"><a href="/Markdown%E8%AF%AD%E6%B3%95" title="Markdown 语法">Markdown 语法</a></h1>
+        <p class="entry-date">2016-04-11</p>
+        <p><a href="http://wowubuntu.com/markdown/index.html">参考链接</a></p>
+
+<h3 id="section">标题</h3>
+
+<p>在文字前面加上1-6个#来实现, 代表HTML中的六级标题 h1-h6<br />
+在文字左右各加1-3各符号</p>
+
+<h3 id="section-1">引用</h3>
+<p>在第一行加上 &gt; 和一个空格，表示引用，还可以嵌套<br />
+&gt; ## 这是个引用 
+» - 这是嵌套引用
+» - 这是嵌套引用<br />
+&gt;##这是个引用</p>
+
+<h3 id="section-2">列表</h3>
+<p>Markdown 支持有序列表和无序列表</p>
+
+<p>无序列表使用星号(*)、加号(+)或是减号(-)，加一个空格，作为列表标记：</p>
+
+<ul>
+  <li>这是个无序列表</li>
+  <li>这是个无序列表</li>
+  <li>这是个无序列表</li>
+</ul>
+
+<p>有序列表则使用数字接着一个英文句点：</p>
+
+<ol>
+  <li>
+    <p>有序列表，注意：</p>
+
+    <p>数字前面最多三个空格</p>
+
+    <p>点号后面最少一个空格</p>
+  </li>
+  <li>
+    <p>有序列表</p>
+  </li>
+</ol>
+
+<pre><code>列表段落 列表里的段落前后要用行区分
+</code></pre>
+
+<ol>
+  <li>有序列表</li>
+</ol>
+
+<p>如果要在列表项目内放进引用，那 &gt; 就需要缩进：</p>
+
+<ul>
+  <li>在列表中插入引用
+ &gt; 这是个引用<br />
+ &gt; 这是个引用</li>
+</ul>
+
+<p>如果要放代码区块的话，该区块就需要缩进两次，也就是 8 个空格或是 2 个制表符：</p>
+
+<ul>
+  <li>
+    <p>一列表项包含一个列表区块：</p>
+
+    <pre><code>  &lt;while (true) printf("I LOVE YOU")&gt;
+</code></pre>
+  </li>
+</ul>
+
+<h3 id="section-3">代码区块</h3>
+
+<p>和程序相关的写作或是标签语言原始码通常会有已经排版好的代码区块，通常这些区块我们并不希望它以一般段落文件的方式去排版，而是照原来的样子显示，Markdown 会用 &lt;/pre&gt; 和 &lt;/code&gt; 标签来把代码区块包起来。</p>
+
+<p>要在 Markdown 中建立代码区块很简单，只要简单地缩进4个空格或是1个制表符就可以，例如，下面的输入：</p>
+
+<pre><code>while (true) {
+    printf("I LOVE YOU");
+}
+</code></pre>
+
+<p>在代码区块里面， &amp; 、 &lt; 和 &gt; 会自动转成HTML实体,只需要复制贴上，再加上缩进就可以插入范例用的 HTML 原始码了</p>
+
+<pre><code>&lt;div class="footer"&gt;
+    &amp;copy; 2004 Foo Corporation
+&lt;/div&gt;
+</code></pre>
+
+<h3 id="section-4">分割线</h3>
+
+<p>你可以在一行中用三个以上的星号、减号、底线来建立一个分隔线，行内不能有其他东西。你也可以在星号或是减号中间插入空格。下面每种写法都可以建立分隔线：</p>
+
+<hr />
+
+<hr />
+
+<hr />
+
+<hr />
+
+<h2 id="section-5">区段元素</h2>
+
+<h3 id="section-6">链接</h3>
+
+<p>Markdown 支持两种形式的链接语法： 行内式和参考式两种形式。</p>
+
+<p>要建立一个行内式的链接，<strong>只要在方块括号后面紧接着圆括号并插入网址链接即可</strong>，如果你还想要加上链接的 title 文字，只要在网址后面，用双引号把 title 文字包起来即可</p>
+
+<p>这是一个链接<a href="www.zuoquaxiong.com&quot;哈哈&quot;">佐罗博客</a></p>
+
+<p>如果你是要链接到同样主机的资源，你可以使用相对路径：</p>
+
+<p>这是相对路径<a href="/about/index.heml">相对路径</a></p>
+
+<p>参考式的链接是在链接文字的括号后面再接上另一个方括号，而在第二个方括号里面要填入用以辨识链接的标记：</p>
+
+<p>这是个参考链接<a href="www.zuoluo.com">佐罗</a></p>
+
+<h3 id="section-7">代码</h3>
+
+<p>如果要标记一小段行内代码，你可以用反引号把它包起来（`），例如：</p>
+
+<p>这是个行内代码<code>pringf()</code>例子</p>
+
+<p>如果要在代码区段内插入反引号，你可以用多个反引号来开启和结束代码区段：</p>
+
+<pre><code>``There is a literal backtick (`) here.``
+</code></pre>
+
+<p>代码区段的起始和结束端都可以放入一个空白，起始端后面一个，结束端前面一个，这样你就可以在区段的一开始就插入反引号：</p>
+
+<p>A single backtick in a code span: <code>`</code></p>
+
+<p>A backtick-delimited string in a code span: <code>`foo`</code></p>
+
+<h3 id="section-8">图片</h3>
+
+<p>行内式的图片语法看起来像是：</p>
+
+<p><img src="/a.png" alt="照片" /></p>
+
+
+        <div id="disqus_container">
+            <class="comment"/>
+<div id="disqus_thread"></div>
+<script>
+    /**
+     *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+     *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables
+     */
+    /*
+    var disqus_config = function () {
+        this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+        this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() {  // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        
+        s.src = '//mukosame.disqus.com/embed.js';
+        
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+        
+        </div>
+   </div>
+   
+    <div class="sidenav">
+        <h2>Blog</h2>
+        <ul class="artical-list">
+        
+            <li><a href="/Markdown%E8%AF%AD%E6%B3%95">Markdown 语法</a></li>
+        
+            <li><a href="/Java%E9%9D%A2%E8%AF%95%E9%A2%98">Java面试题</a></li>
+        
+            <li><a href="/Android%E9%9D%A2%E8%AF%95%E9%A2%98">Android 面试题</a></li>
+        
+        </ul>
+
+        <h2>Dump</h2>
+        <ul class="artical-list">
+        
+        </ul>
+
+        <h2>Project</h2>
+        <ul class="artical-list">
+        
+        </ul>
+    </div>
+</div>
+
+<script src="/js/post.js" type="text/javascript"></script>
+
+
+    <script type="text/javascript">
+        $(function(){
+            $('.home-follow').click(function(e){
+                e.preventDefault();
+
+                if($('.home-contact').is(':visible')){
+                    $('.home-contact').slideUp(100);
+                }else{
+                    $('.home-contact').slideDown(100);
+                }
+            });
+        })
+    </script>
+</body>
+</html>
