@@ -605,3 +605,84 @@ category: blog
 
 ### 6. Context内存泄漏问题
 
+6.1 静态资源导致的内存泄露
+
+    public class MyCustomResource {
+    //静态变量drawable
+    private static Drawable drawable;
+    private View view；
+
+    public MyCustomResource(Context context) {
+        Resources resources = context.getResources();
+        drawable = resources.getDrawable(R.drawable.ic_launcher);
+        view = new View(context);
+        view.setBackgroundDrawable(drawable);
+    }
+}
+
+我们知道静态变量在整个应用的内存里只保存一份，一旦创建就不会释放该变量的内存，直到整个应用都销毁才会释放static静态变量的内存。
+
+    public class View implements Drawable.Callback, KeyEvent.Callback,
+        AccessibilityEventSource {
+    ...........
+    public void setBackgroundDrawable(Drawable background) {
+         ..........
+         /**此处的this就是当前View对象，而View对象又是有Context对象获得
+         因此，变量background持有View对象的引用，View持有Context的引用，
+         所有background间接持有Context对象的引用了*/
+         background.setCallback(this);
+         .......
+    }
+    ..........
+}
+
+**说明：**
+
+1. 静态变量drawable持有该Activity的Context对象的间接引用；
+2. 所有Context的生命周期和Activity是一样长，当Activity finish掉时，该Activity内存无法回收，导致内存泄漏隐患；
+3. 以后代码中避免使用静态资源，或者使用弱引用来解决相应的问题也是可以的。
+
+6.2 单例模式导致内存泄漏
+
+    public class CustomManager {
+    private static CustomManager sInstance;
+    public static CustomManager getInstance(Context context) {
+        if (sInstance == null) {
+            sInstance = new CustomManager(context);
+        }
+        return sInstance;
+    }
+
+    private Context mContext;
+    private CustomManager(Context context) {
+        mContext = context;
+    }
+}
+
+说明：
+
+1. 单例模式使用的是静态类的方式，让该对象在整个应用的内存中保持一份该对象，从而减少对多次创建对象带来的资源浪费；
+2. 创建该单例的时候使用了生命周期端的Context对象的引用，如果是在Activity中创建以上单例的话，单例的生命周期长于Activity，导致内存泄漏；
+3. 如果你是在Application中创建以上单例的话不会导致内存泄漏。因为Application的Context生命周期是整个应用，和单例的生命周期一样。
+
+        public class CustomManager {
+            private static CustomManager sInstance;
+            public static CustomManager getInstance(Context context) {
+                if (sInstance == null) {
+                    sInstance = new CustomManager(context.getApplicationContext());
+                }
+                return sInstance;
+            }
+
+            private Context mContext;
+            private CustomManager(Context context) {
+                mContext = context;
+            }
+        }
+
+### 7. `Context`总结
+
+1. Context是“运行上下文环境”，从代码角度看Application，Service，Activity都是Context；
+2. 所以Context都是在ActivityThread里创建的，都会关联一个ContextImpl对象，并且保存一个它们的引用；
+3. 尽量少用Context对象去获取静态变量，静态方法，以及单例对象。以免导致内存泄漏；
+4. 在创建与UI相关的地方，比如创建一个Dialog，或者在代码中创建一个TextView，都用Activity的Context去创建。
