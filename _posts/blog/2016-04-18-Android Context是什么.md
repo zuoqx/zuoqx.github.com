@@ -282,4 +282,11 @@ category: blog
             }    
     }
 
+***`ContextWrapper`***----`Context`的包装类
+
+该类中通过`attachBaseContext`方法将`ContextImpl`对象赋值给`mBase`成员变量,然后调用`ContextImpl`对象的方法。
+
+***`Application`***中的`Context`
+
+
 
