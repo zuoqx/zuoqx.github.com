@@ -42,4 +42,19 @@ category: blog
 
 ### WebView缓存
 
+WebView的缓存可以分为**页面缓存**和**数据缓存**。
 
+1. 页面缓存
+   
+    页面缓存是指加载一个网页时的html、JS、CSS等页面或者资源数据产生的缓存。这些缓存资源是由于浏览器的行为而产生，开发者只能通过配置HTTP响应头影响浏览器的行为才能间接地影响到这些缓存数据。            
+
+2. 数据缓存分为两种：**AppCache**和**DOM Storage（Web Storage）**。他们是因为页面开发者的直接行为而产生。所有的缓存数据都由开发者直接完全地掌控。
+
+    `AppCache 使我们能够有选择的缓冲web浏览器中所有的东西，从页面、图片到脚本、css等等。尤其在涉及到应用于网站的多个页面上的CSS和JavaScript文件的时候非常有用。其大小目前通常是5M，需要手动开启（setAppCacheEnabled）。并设置路径（setAppCachePath）和容量（setAppCacheMaxSize，但在API 18调用没有作用，系统统一管理缓存大小）`
+
+    `DOM Storage 存储一些简单的用key/value,分为Session Storage和Local Storage两种。分别用于会话级别的存储（页面关闭即消失）和本地化存储（除非主动删除，否则数据永远不会过期）。`
+    > 手动开启DOM Storage（setDomStorageEnabled），设置存储路径（setDatabasePath)
+    
+    > 如果需要清除Local Storage的话，仅仅删除Local Storage的本地存储文件是不够的，内存里面有缓存数据。如果再次进入页面，Local Storage中的缓存数据同样存在。需要杀死程序运行的当前进程再重新启动才可以。
+
+3. 优化：主要从缓存方面考虑：缓存网页、数据，不如图片等，或者把一些资源html、js保存到本地，然后需要时加载等
