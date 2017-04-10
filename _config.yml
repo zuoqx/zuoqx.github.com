@@ -1,7 +1,10 @@
 auto: true
 
-#markdown: rdiscount
-highlighter: 'pygments'
+highlighter: rouge
+markdown: kramdown
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
 #paginate: 8
 permalink: /:title
 
