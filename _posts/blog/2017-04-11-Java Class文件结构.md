@@ -61,7 +61,8 @@ category: blog
 ###  字段表集合   
 1. 字段表（field_info）用于描述接口或者类中声明的变量。字段（field）包括类级变量以及实例级变量，但不包括在方法内部声明的局部变量  
 2. 字段表的结构如下：  
-|        名称      | 作用 |
+    
+|        名称      | 作用 |  
 | -----------------| ---- |
 | access_flags     | 和类的访问标志类似，标示字段访问属性|
 | name_index       | 字段的简单名称
@@ -77,7 +78,26 @@ category: blog
     对象类型则用字符，“L”加对象的全限定名来表示，如，Ljava/lang/Object   
     对于数组类型，每一维度将使用一个前置的“[”字符来描述，如为“java.lang.String[][]”类型的二维数组，将被记录为：“[[Ljava/lang/String；”，一个整型数组“int[]”将被记录为“[I”   
     用描述符来描述方法时，按照先参数列表，后返回值的顺序描述，参数列表按照参数的
-    严格顺序放在一组小括号“（）”之内，如，void add()的描述符为“() V”，int indexOf(char[] c, int s, String str, int m)的描述符为“([CILjava/lang/String;I)I”
+    严格顺序放在一组小括号“（）”之内，如，void add()的描述符为“() V”，int indexOf(char[] c, int s, String str, int m)的描述符为“([CILjava/lang/String;I)I”  
+    字段表集合中不会列出从超类或者父接口中继承而来的字段，但有可能列出原本Java代码之中不存在的字段，譬如在内部类中为了保持对外部类的访问性，会自动添加指向外部类实例的this字段  
+
+### 方法表集合  
+1. 方法表的描述与字段表很类似  
+2. 方法表的结构，包括访问标志（access_flags）、名称索引（name_index）、描述符索引（descriptor_index）、属性表集合（attributes）几项  
+3. volatile关键字和transient关键字不能修饰方法，所以方法表的访问标志中没有
+ACC_VOLATILE标志和ACC_TRANSIENT标志  
+4. synchronized、native、strictfp和abstract关键字可以修饰方法，方法表的访问标志中增加了ACC_SYNCHRONIZED、ACC_NATIVE、ACC_STRICTFP和ACC_ABSTRACT标志  
+5. 方法里的Java代码，经过编译器编译成字节码指令后，存放在方法属性表集合中一个名为“Code”的属性里面  
+6. 如果父类方法在子类中没有被重写（Override），方法表集合中就不会出现来自父类的方法信息  
+7. 有可能会出现由编译器自动添加的方法，最典型的便是类构造器“＜clinit＞”方法和实例构造器“＜init＞”方法  
+8. 在Java语言中，要重载（Overload）一个方法，除了要与原方法具有相同的简单名称之
+外，还要求必须拥有一个与原方法不同的特征签名  
+9. 特征签名就是一个方法中各个参数在常量池中的字段符号引用的集合，也就是因为返回值不会包含在特征签名中  
+10. 因此Java语言里面是无法仅仅依靠返回值的不同来对一个已有方法进行重载的  
+
+### 属性表集合  
+1. 在Class文件、字段表、方法表都可以携带自己的属性表集合，以用于描述某些场景专有的信息  
+2. 属性表集合的顺序没有严格要求，可以自定义自己的属性值
 
 
 
