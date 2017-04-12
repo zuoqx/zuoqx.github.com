@@ -57,9 +57,27 @@ category: blog
 2. 类索引、父类索引和接口索引集合都按顺序排列在访问标志之后  
 3. 类索引和父类索引用，各自指向一个类型为CONSTANT_Class_info的类描述符常量，通过CONSTANT_Class_info类型的常量中的索引值可以找到定义在CONSTANT_Utf8_info类型的常量中的全限定名字符串   
 4. 接口索引集合，入口的第一项——u2类型的数据为接口计数器（interfaces_count），表示索引表的容量。如果该类没有实现任何接口，则该计数器值为0，后面接口的索引表不再占用任何字节  
-  
- ###  字段表集合
+     
+###  字段表集合   
+1. 字段表（field_info）用于描述接口或者类中声明的变量。字段（field）包括类级变量以及实例级变量，但不包括在方法内部声明的局部变量  
+2. 字段表的结构如下：  
+|        名称      | 作用 |
+| -----------------| ---- |
+| access_flags     | 和类的访问标志类似，标示字段访问属性|
+| name_index       | 字段的简单名称
+| descriptor_index | 字段和方法的描述符
+| attributes_count | 
+| attributes       | 
 
+    全限定名是指，把类全名中的“.”替换成“/”，比如：org/fenixsoft/clazz/TestClass；  
+    简单名称是指没有类型和参数修饰的方法或者字段名称，这个类中的inc（）方法和m字段的简单名称分别是“inc”和“m”   
+    方法和字段的描述符，是用来描述字段的数据类型、方法的参数列表（包括数量、类型以及顺序）和返回值  
+    基本数据类型，byte、char、double、float、int、long、short、boolean，分别用大写字符“B”、“C”、“D”、“F”、“I”、“L”、“S”、“Z”表示  
+    返回值的void类型都用一个大写字符，“V”来表示   
+    对象类型则用字符，“L”加对象的全限定名来表示，如，Ljava/lang/Object   
+    对于数组类型，每一维度将使用一个前置的“[”字符来描述，如为“java.lang.String[][]”类型的二维数组，将被记录为：“[[Ljava/lang/String；”，一个整型数组“int[]”将被记录为“[I”   
+    用描述符来描述方法时，按照先参数列表，后返回值的顺序描述，参数列表按照参数的
+    严格顺序放在一组小括号“（）”之内，如，void add()的描述符为“() V”，int indexOf(char[] c, int s, String str, int m)的描述符为“([CILjava/lang/String;I)I”
 
 
 
