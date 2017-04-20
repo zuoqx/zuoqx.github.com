@@ -1,0 +1,20 @@
+---
+layout: post
+title: Android应用程序窗口（Activity）实现框架
+description: Android应用程序窗口（Activity）实现框架
+category: blog
+---
+
+
+### Android应用程序窗口（Activity）的运行上下文环境（Context）的创建过程    
+1. Android应用程序窗口的运行上下文环境是通过ContextImpl类来描述的，即每一个Activity组件都关联有一个ContextImpl对象。ContextImpl类继承了Context类。  
+2. Activity组件通过其父类ContextThemeWrapper和ContextWrapper的成员变量mBase来引用了一个ContextImpl对象，这样，Activity组件以后就可以通过这个ContextImpl对象来执行一些具体的操作，例如，启动Service组件、注册广播接收者和启动Content Provider组件等操作。同时，ContextImpl类又通过自己的成员变量mOuterContext来引用了与它关联的一个Activity组件，这样，ContextImpl类也可以将一些操作转发给Activity组件来处理。  
+3. Activity的实例创建是在ActivityThread类的performLaunchActivity类，具体就是调用Instrumentation.newActivity()方法。  
+4. 创建好了要启动的Activity组件实例之后，函数接下来就可以对它进行初始化了。初始化一个Activity组件实例需要一个Application对象app、一个ContextImpl对象appContext以及一个Configuration对象config，它们分别用来描述该Activity组件实例的应用程序信息、运行上下文环境以及配置信息。  
+5. 函数又通过调用ActivityThread类的成员变量mInstrumentation所描述一个Instrumentation对象的成员函数callActivityOnCreate来通知Activity组件实例activity，它已经被创建和启动起来了。  
+6. Activity组件在创建过程中，即在它的成员函数attach被调用的时候，会创建一个PhoneWindow对象，并且保存在成员变量mWindow中，用来描述一个具体的Android应用程序窗口。  
+7. Activity组件在创建的最后，即在它的子类所重写的成员函数onCreate中，会调用父类Activity的成员函数setContentView来创建一个Android应用程序窗口的视图。  
+8. 一个Activity组件所关联的应用程序窗口对象的类型为PhoneWindow。  
+9. 这个类型为PhoneWindow的应用程序窗口是通过一个类型为LocalWindowManager的本地窗口管理器来维护的。  
+10. 这个类型为LocalWindowManager的本地窗口管理器又是通过一个类型为WindowManagerImpl的窗口管理器来维护应用程序窗口的。  
+11. 这个类型为PhoneWindow的应用程序窗口内部有一个类型为DecorView的视图对象，这个视图对象才是真正用来描述一个Activity组件的UI的。  
