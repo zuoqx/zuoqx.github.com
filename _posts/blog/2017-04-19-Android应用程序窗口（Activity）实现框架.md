@@ -58,7 +58,22 @@ category: blog
 4. 在应用程序进程这一侧，每一个应用程序窗口，即每一个Activity组件，都有一个关联的Surface对象，这个Surface对象是保在在一个关联的ViewRoot对象的成员变量mSurface中的  
 5. 在WindowManagerService服务这一侧，每一个Java层的Surface对都对应有一个C++层的SurfaceControl对象，并且后者的地址值保存在前者的成员变量mSurfaceControl中  
 6. 一个应用程序窗口分别位于应用程序进程和WindowManagerService服务中的两个Surface对象,虽然它们都是用来操作位于SurfaceFlinger服务中的同一个Layer对象的，不过，它们的操作方式却不一样。位于应用程序进程这一侧的Surface对象负责绘制应用程序窗口的UI，即往应用程序窗口的图形缓冲区填充UI数据，而位于WindowManagerService服务这一侧的Surface对象负责设置应用程序窗口的属性，例如位置、大小等属性。这两种不同的操作方式分别是通过C++层的Surface对象和SurfaceControl对象来完成的，之所以会有这样的区别，是因为绘制应用程序窗口是独立的，由应用程序进程来完即可，而设置应用程序窗口的属性却需要全局考虑，即需要由WindowManagerService服务来统筹安排，例如，一个应用程序窗口的Z轴坐标大小要考虑它到的窗口类型以及它与系统中的其它窗口的关系  
+7. 一个应用程序窗口对应有两个Surface对象，那么它们是如何创建出来的呢？简单地说，就是按照以下步骤来创建：
 
-### Android应用程序窗口（Activity）的绘图表面（Surface）的创建过程   
+       1. 应用程序进程请求WindowManagerService服务为一个应用程序窗口创建一个Surface对象；
+
+       2. WindowManagerService服务请求SurfaceFlinger服务创建一个Layer对象，并且获得一个ISurface接口；
+
+       3. WindowManagerService服务将获得的ISurface接口保存在其内部的一个Surface对象中，并且将该ISurface接口返回给应用程序进程；
+
+       4. 应用程序进程得到WindowManagerService服务返回的ISurface接口之后，再将其封装成其内部的另外一个Surface对象中。    
+8. 每一个应用程序窗口都对应有两个Java层的Surface对象，其中一个是在WindowManagerService服务这一侧创建的，而另外一个是在应用程序进程这一侧创建的。  
+9. 在WindowManagerService服务这一侧创建的Java层的Surface对象在C++层关联有一个SurfaceControl对象，用来设置应用窗口的属性，例如，大小和位置等。  
+10. 在应用程序进程这一侧创建的Java层的Surface对象在C++层关联有一个Surface对象，用来绘制应用程序窗品的UI.  
+
+### Android应用程序窗口（Activity）的测量（Measure）、布局（Layout）和绘制（Draw）过程  
 1. 
+
+
+
 
