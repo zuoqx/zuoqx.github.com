@@ -36,7 +36,7 @@ Android不会挂起正在执行本地代码的线程，如果当前垃圾回收�
 如果类从来不会被卸载或者重新加载，当类加载的时候，自动缓存这些ID的代码如下：
 
 ```java
-	 /*
+	/*
      * We use a class initializer to allow the native code to cache some
      * field offsets. This native function looks up and caches interesting
      * class/field/method IDs. Throws on failure.
@@ -56,7 +56,16 @@ Android不会挂起正在执行本地代码的线程，如果当前垃圾回收�
 
 注意，**jfield**和**jmethod**是透明类型，不是对象类型，也就没有必要传入到NewGlobalRef函数里，因为它们本身是不变的。像**GetStringUtfChars**和**GetByteArrayElements**函数返回的原始数据指针，也不是对象，也就可以在线程间传递。
 
-有种情形需要注意的是，如果通过AttachCurrentThread依附的线程，
+有种情形需要注意的是，如果通过AttachCurrentThread依附的线程，正在运行的代码不会主动释放局部引用，出发卸载掉线程。任何创建的局部引用都必须手动删除，在循环里创建的局部引用也应该手动删除。
+
+### UTF-8 and UTF-16字符串
+
+### 原始数组
+JNI提供函数用于访问数组对象的内容，尽管一次只能访问一个实体内容，原始数组可以像在C语言中声明的一样，可以直接读取和写入。为了在没有限制VM实现的情况下，尽可能使得接口更加高效，函数组**Get<PrimitiveType>ArrayElements**调用运行在运行时要么返回指向实际元素的指针，要么会分配内存并且复制一份。不论那种方式，在相关释放操作调用之前，这些原生的指针都会一直有效。所以，**一定要释放获得的数组对象**，因此，如果Get调用失败后，要确保不要释放NULL指针。
+
+可以在函数**isCopy**里出入非空指针，来检查数据释放已经拷贝。
+
+
 
 
 
