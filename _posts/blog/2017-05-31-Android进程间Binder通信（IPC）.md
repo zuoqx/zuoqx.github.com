@@ -97,7 +97,9 @@ fail_open:
 
 这里为什么会同时使用进程虚拟地址空间和内核虚拟地址空间来映射同一个物理页面呢？
 
-    这就是Binder进程间通信机制的精髓所在了，同一个物理页面，一方映射到进程虚拟地址空间，一方面映射到内核虚拟地址空间，这样，进程和内核之间就可以减少一次内存拷贝了，提到了进程间通信效率。举个例子如，Client要将一块内存数据传递给Server，一般的做法是，Client将这块数据从它的进程空间拷贝到内核空间中，然后内核再将这个数据从内核空间拷贝到Server的进程空间，这样，Server就可以访问这个数据了。但是在这种方法中，执行了两次内存拷贝操作，而采用我们上面提到的方法，只需要把Client进程空间的数据拷贝一次到内核空间，然后Server与内核共享这个数据就可以了，整个过程只需要执行一次内存拷贝，提高了效率。
+    这就是Binder进程间通信机制的精髓所在了，同一个物理页面，一方映射到进程虚拟地址空间，一方面映射到内核虚拟地址空间，这样，进程和内核之间就可以减少一次内存拷贝了，提到了进程间通信效率。
+    举个例子如，Client要将一块内存数据传递给Server，一般的做法是，Client将这块数据从它的进程空间拷贝到内核空间中，然后内核再将这个数据从内核空间拷贝到Server的进程空间，这样，Server就可以访问这个数据了。
+    但是在这种方法中，执行了两次内存拷贝操作，而采用我们上面提到的方法，只需要把Client进程空间的数据拷贝一次到内核空间，然后Server与内核共享这个数据就可以了，整个过程只需要执行一次内存拷贝，提高了效率。
 
 #### Service Manager是成为Android进程间通信（IPC）机制Binder守护进程的过程：     
 1. 打开/dev/binder文件：open("/dev/binder", O_RDWR);
@@ -106,6 +108,134 @@ fail_open:
 4. 进入循环等待请求的到来：binder_loop(bs, svcmgr_handler);
 
 ### Binder中Server和Client获得Service Manager接口过程
+Service Manager在Binder机制中既充当守护进程的角色，同时它也充当着Server角色，然而它又与一般的Server不一样。对于普通的Server来说，Client如果想要获得Server的远程接口，那么必须通过Service Manager远程接口提供的getService接口来获得，这本身就是一个使用Binder机制来进行进程间通信的过程。而对于Service Manager这个Server来说，Client如果想要获得Service Manager远程接口，却不必通过进程间通信机制来获得，因为Service Manager远程接口是一个特殊的Binder引用，它的引用句柄一定是0。
+
+#### 获取Service Manager远程接口的过程
+获取Service Manager远程接口的函数是defaultServiceManager：
+
+```c
+sp<IServiceManager> defaultServiceManager()
+{
+
+    if (gDefaultServiceManager != NULL) return gDefaultServiceManager;
+
+    {
+        AutoMutex _l(gDefaultServiceManagerLock);
+        if (gDefaultServiceManager == NULL) {
+            gDefaultServiceManager = interface_cast<IServiceManager>(
+                ProcessState::self()->getContextObject(NULL));
+        }
+    }
+
+    return gDefaultServiceManager;
+}
+```
+
+![ServiceManager继承类图](/images/service_manager.gif)
+
+BpInterface是一个模板类：
+
+```c
+template<typename INTERFACE>
+class BpInterface : public INTERFACE, public BpRefBase
+{
+public:
+	BpInterface(const sp<IBinder>& remote);
+
+protected:
+	virtual IBinder* onAsBinder();
+};
+```
+
+IServiceManager类继承了IInterface类，而IInterface类和BpRefBase类又分别继承了RefBase类。
+
+在BpRefBase类中，有一个成员变量mRemote，它的类型是IBinder*，实现类为BpBinder，它表示一个Binder引用，引用句柄值保存在BpBinder类的mHandle成员变量中。
+
+BpBinder类通过IPCThreadState类来和Binder驱动程序交互，而IPCThreadState又通过它的成员变量mProcess来打开/dev/binder设备文件，mProcess成员变量的类型为ProcessState。ProcessState类打开设备/dev/binder之后，将打开文件描述符保存在mDriverFD成员变量中，以供后续使用。
+
+最终目的是要创建一个BpServiceManager实例，并且返回它的IServiceManager接口。创建Service Manager远程接口主要是下面语句：
+
+```c++
+
+gDefaultServiceManager = interface_cast<IServiceManager>(
+           ProcessState::self()->getContextObject(NULL));
+```
+
+返回一个全局唯一的ProcessState实例变量，就是单例模式了，这个变量名为gProcess。如果gProcess尚未创建，就会执行创建操作，在ProcessState的构造函数中，会通过open文件操作函数打开设备文件/dev/binder，并且返回来的设备文件描述符保存在成员变量mDriverFD中。
+
+```c++
+gDefaultServiceManager = new BpServiceManager(new BpBinder(0));
+```
+
+这样，Service Manager远程接口就创建完成了，它本质上是一个BpServiceManager，包含了一个句柄值为0的Binder引用。
+
+#### 在Android系统的Binder机制中，Server和Client拿到这个Service Manager远程接口之后怎么用？
+对Server来说，就是调用IServiceManager::addService这个接口来和Binder驱动程序交互了，即调用BpServiceManager::addService 。而BpServiceManager::addService又会调用通过其基类BpRefBase的成员函数remote获得原先创建的BpBinder实例，接着调用BpBinder::transact成员函数。在BpBinder::transact函数中，又会调用IPCThreadState::transact成员函数，这里就是最终与Binder驱动程序交互的地方了。回忆一下前面的类图，IPCThreadState有一个PorcessState类型的成中变量mProcess，而mProcess有一个成员变量mDriverFD，它是设备文件/dev/binder的打开文件描述符，因此，IPCThreadState就相当于间接在拥有了设备文件/dev/binder的打开文件描述符，于是，便可以与Binder驱动程序交互了。
+
+对Client来说，就是调用IServiceManager::getService这个接口来和Binder驱动程序交互了。具体过程上述Server使用Service Manager的方法是一样的，这里就不再累述了。
+
+###  Android系统进程间通信（IPC）机制Binder中的Server启动过程分析
+在Android系统中Binder进程间通信机制中的Server角色获得Service Manager远程接口，即defaultServiceManager函数的实现，Server获得了Service Manager远程接口之后，就要把自己的Service添加到Service Manager中去，然后把自己启动起来，等待Client的请求。
+
+![MediaPlayerServices](/images/MediaPlayerService.gif)
+
+BnMediaPlayerService是一个Binder Native类，**其实就是Binder的Stub实现类**，用来处理Client请求的。BnMediaPlayerService继承于BnInterface<IMediaPlayerService>类，BnInterface是一个模板类，它定义在frameworks/base/include/binder/IInterface.h文件中：
+
+```c
+template<typename INTERFACE>  
+class BnInterface : public INTERFACE, public BBinder  
+{  
+	public:  
+	    virtual sp<IInterface>      queryLocalInterface(const String16& _descriptor);  
+	    virtual const String16&     getInterfaceDescriptor() const;  
+	  
+	protected:  
+	    virtual IBinder*            onAsBinder();  
+};
+```
+
+BnMediaPlayerService实际是继承了IMediaPlayerService和BBinder类。IMediaPlayerService和BBinder类又分别继承了IInterface和IBinder类，IInterface和IBinder类又同时继承了RefBase类。
+
+实际上，BnMediaPlayerService并不是直接接收到Client处发送过来的请求，而是使用了IPCThreadState接收Client处发送过来的请求，而IPCThreadState又借助了ProcessState类来与Binder驱动程序交互。
+
+IPCThreadState接收到了Client处的请求后，就会调用BBinder类的transact函数，并传入相关参数，BBinder类的transact函数最终调用BnMediaPlayerService类的onTransact函数，于是，就开始真正地处理Client的请求了。
+
+#### MediaPlayerService是如何启动的
+启动MediaPlayerService的代码位于frameworks/base/media/mediaserver/main_mediaserver.cpp文件中：
+
+```c++
+int main(int argc, char** argv)  
+{  
+	 // 创建 ProcessState
+    sp<ProcessState> proc(ProcessState::self()); 
+    
+    // 创建BpServiceManager 
+    sp<IServiceManager> sm = defaultServiceManager(); 
+     
+    LOGI("ServiceManager: %p", sm.get());  
+    AudioFlinger::instantiate(); 
+     
+    // 初始化MediaPlayerService服务
+    MediaPlayerService::instantiate();  
+    
+    CameraService::instantiate();  
+    AudioPolicyService::instantiate();  
+    
+    // 
+    ProcessState::self()->startThreadPool();  
+    IPCThreadState::self()->joinThreadPool();  
+}  
+```
+
+ProcessState::self()这个函数的作用：
+
+1. 通过open_driver函数打开Binder设备文件/dev/binder，并将打开设备文件描述符保存在成员变量mDriverFD中；
+2. 通过mmap来把设备文件/dev/binder映射到内存中
+
+
+
+
+
 
 
 
