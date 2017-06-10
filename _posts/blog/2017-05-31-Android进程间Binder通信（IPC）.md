@@ -215,7 +215,7 @@ int main(int argc, char** argv)
     LOGI("ServiceManager: %p", sm.get());  
     AudioFlinger::instantiate(); 
      
-    // 初始化MediaPlayerService服务
+    // 初始化MediaPlayerService服务，把MediaPlayerService添加到Service Manger中去
     MediaPlayerService::instantiate();  
     
     CameraService::instantiate();  
@@ -231,6 +231,86 @@ ProcessState::self()这个函数的作用：
 
 1. 通过open_driver函数打开Binder设备文件/dev/binder，并将打开设备文件描述符保存在成员变量mDriverFD中；
 2. 通过mmap来把设备文件/dev/binder映射到内存中
+
+打开/dev/binder设备文件后，Binder驱动程序就为MediaPlayerService进程创建了一个struct binder_proc结构体实例来维护MediaPlayerService进程上下文相关信息。
+
+```c++
+void MediaPlayerService::instantiate() {
+    defaultServiceManager()->addService(
+            String16("media.player"), new MediaPlayerService());
+}
+```
+
+defaultServiceManager返回的实际是一个BpServiceManger类实例，因此，我们看一下BpServiceManger::addService的实现
+
+```c++
+virtual status_t addService(const String16& name, const sp<IBinder>& service)
+    {
+        Parcel data, reply;
+        data.writeInterfaceToken(IServiceManager::getInterfaceDescriptor());
+        data.writeString16(name);
+        data.writeStrongBinder(service);
+        status_t err = remote()->transact(ADD_SERVICE_TRANSACTION, data, &reply);
+        return err == NO_ERROR ? reply.readExceptionCode() : err;
+    }
+```
+
+这里的remote成员函数来自于BpRefBase类，它返回一个BpBinder指针
+
+```c++
+status_t BpBinder::transact(
+    uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+{
+    // Once a binder has died, it will never come back to life.
+    if (mAlive) {
+        status_t status = IPCThreadState::self()->transact(
+            mHandle, code, data, reply, flags);
+        if (status == DEAD_OBJECT) mAlive = 0;
+        return status;
+    }
+
+    return DEAD_OBJECT;
+}
+```
+
+主要调用了talkWithDriver函数来与Binder驱动程序进行交互.
+
+###  Android系统进程间通信（IPC）机制Binder中的Client获得Server远程接口过程源代码分析
+获取MediaPlayerService这个远程接口的本质问题就变为从Service Manager中获得MediaPlayerService的一个句柄
+
+```c++
+// establish binder interface to MediaPlayerService
+/*static*/const sp<IMediaPlayerService>&
+IMediaDeathNotifier::getMediaPlayerService()
+{
+    LOGV("getMediaPlayerService");
+    Mutex::Autolock _l(sServiceLock);
+    if (sMediaPlayerService.get() == 0) {
+        sp<IServiceManager> sm = defaultServiceManager();
+        sp<IBinder> binder;
+        do {
+            binder = sm->getService(String16("media.player"));
+            if (binder != 0) {
+                break;
+             }
+             LOGW("Media player service not published, waiting...");
+             usleep(500000); // 0.5 s
+        } while(true);
+
+        if (sDeathNotifier == NULL) {
+        sDeathNotifier = new DeathNotifier();
+    }
+    binder->linkToDeath(sDeathNotifier);
+    sMediaPlayerService = interface_cast<IMediaPlayerService>(binder);
+    }
+    LOGE_IF(sMediaPlayerService == 0, "no media player service!?");
+    return sMediaPlayerService;
+}
+```
+
+接下去的while循环是通过sm->getService接口来不断尝试获得名称为“media.player”的Service，即MediaPlayerService。为什么要通过这无穷循环来得MediaPlayerService呢？因为这时候MediaPlayerService可能还没有启动起来，所以这里如果发现取回来的binder接口为NULL，就睡眠0.5秒，然后再尝试获取，这是获取Service接口的标准做法。
+
+最终过程是，通过IPCThreadState::talkWithDriver与驱动程序进行交互
 
 
 
