@@ -331,6 +331,255 @@ intr = new BpMediaPlayerService(new BpBinder(handle));
 
 #### 一.  获取Service Manager的Java远程接口
 
+![ServiceManagerProxy](/images/binder_service.gif)
+
+ServiceManagerProxy类实现了IServiceManager接口，IServiceManager提供了getService和addService两个成员函数来管理系统中的Service。从ServiceManagerProxy类的构造函数可以看出，它需要一个BinderProxy对象的IBinder接口来作为参数。因此，要获取Service Manager的Java远程接口ServiceManagerProxy，首先要有一个BinderProxy对象。
+
+ServiceManager类有一个静态成员函数getIServiceManager，它的作用就是用来获取Service Manager的Java远程接口了，而这个函数又是通过ServiceManagerNative来获取Service Manager的Java远程接口的。
+
+```c++
+public final class ServiceManager {
+	......
+	private static IServiceManager sServiceManager;
+	......
+	private static IServiceManager getIServiceManager() {
+		if (sServiceManager != null) {
+			return sServiceManager;
+		}
+
+		// Find the service manager
+		sServiceManager = ServiceManagerNative.asInterface(BinderInternal.getContextObject());
+		return sServiceManager;
+	}
+	......
+}
+```
+
+BinderInternal.getContextObject是一个JNI方法
+
+```c++
+
+public class BinderInternal {
+	......
+	/**
+	* Return the global "context object" of the system.  This is usually
+	* an implementation of IServiceManager, which you can use to find
+	* other services.
+	*/
+	public static final native IBinder getContextObject();
+	
+	......
+}
+```
+
+它实现在frameworks/base/core/jni/android_util_Binder.cpp文件中：
+
+```c
+static jobject android_os_BinderInternal_getContextObject(JNIEnv* env, jobject clazz)
+{
+    sp<IBinder> b = ProcessState::self()->getContextObject(NULL);
+    return javaObjectForIBinder(env, b);
+}
+```
+
+ProcessState::self()->getContextObject函数返回一个BpBinder对象, 接着调用javaObjectForIBinder把这个BpBinder对象转换成一个BinderProxy对象。
+
+回到ServiceManager.getIServiceManager中，从下面语句返回：
+
+```c++
+sServiceManager = ServiceManagerNative.asInterface(BinderInternal.getContextObject());  
+```
+
+相当于是：
+
+```c++
+sServiceManager = ServiceManagerNative.asInterface(new BinderProxy());  
+```
+
+接下去就是调用ServiceManagerNative.asInterface函数了，
+
+```c++
+public abstract class ServiceManagerNative ......
+{
+	......
+	static public IServiceManager asInterface(IBinder obj)
+	{
+		if (obj == null) {
+			return null;
+		}
+		IServiceManager in =
+			(IServiceManager)obj.queryLocalInterface(descriptor);
+		if (in != null) {
+			return in;
+		}
+
+		return new ServiceManagerProxy(obj);
+	}
+	......
+}
+```
+
+返回到ServiceManager.getIServiceManager中，从下面语句返回：
+
+```c++
+sServiceManager = ServiceManagerNative.asInterface(new BinderProxy());  
+```
+
+就相当于是：
+
+```c++
+sServiceManager = new ServiceManagerProxy(new BinderProxy());  
+```
+
+于是，我们的目标终于完成了。
+
+总结一下，就是在Java层，我们拥有了一个Service Manager远程接口ServiceManagerProxy，而这个ServiceManagerProxy对象在JNI层有一个句柄值为0的BpBinder对象与之通过gBinderProxyOffsets关联起来。
+
+这样获取Service Manager的Java远程接口的过程就完成了。
+
+#### 二. MyService接口的定义
+在Java层，接口是定义在AIDL（Android Interface Define Language）里定义的。
+
+```java
+/*
+ * This file is auto-generated.  DO NOT MODIFY.
+ * Original file: /Users/zerro/AndroidStudioProjects/JNIProject/app/src/main/aidl/com/example/zerro/jniproject/IPlayerInterface.aidl
+ */
+package com.example.zerro.jniproject;
+// Declare any non-default types here with import statements
+
+public interface IPlayerInterface extends android.os.IInterface {
+    /**
+     * Local-side IPC implementation stub class.
+     */
+    public static abstract class Stub extends android.os.Binder implements com.example.zerro.jniproject.IPlayerInterface {
+        private static final java.lang.String DESCRIPTOR = "com.example.zerro.jniproject.IPlayerInterface";
+
+        /**
+         * Construct the stub at attach it to the interface.
+         */
+        public Stub() {
+            this.attachInterface(this, DESCRIPTOR);
+        }
+
+        /**
+         * Cast an IBinder object into an com.example.zerro.jniproject.IPlayerInterface interface,
+         * generating a proxy if needed.
+         */
+        public static com.example.zerro.jniproject.IPlayerInterface asInterface(android.os.IBinder obj) {
+            if ((obj == null)) {
+                return null;
+            }
+            android.os.IInterface iin = obj.queryLocalInterface(DESCRIPTOR);
+            if (((iin != null) && (iin instanceof com.example.zerro.jniproject.IPlayerInterface))) {
+                return ((com.example.zerro.jniproject.IPlayerInterface) iin);
+            }
+            return new com.example.zerro.jniproject.IPlayerInterface.Stub.Proxy(obj);
+        }
+
+        @Override
+        public android.os.IBinder asBinder() {
+            return this;
+        }
+
+        @Override
+        public boolean onTransact(int code, android.os.Parcel data, android.os.Parcel reply, int flags) throws android.os.RemoteException {
+            switch (code) {
+                case INTERFACE_TRANSACTION: {
+                    reply.writeString(DESCRIPTOR);
+                    return true;
+                }
+                case TRANSACTION_play: {
+                    data.enforceInterface(DESCRIPTOR);
+                    this.play();
+                    reply.writeNoException();
+                    return true;
+                }
+                case TRANSACTION_stop: {
+                    data.enforceInterface(DESCRIPTOR);
+                    this.stop();
+                    reply.writeNoException();
+                    return true;
+                }
+            }
+            return super.onTransact(code, data, reply, flags);
+        }
+
+        private static class Proxy implements com.example.zerro.jniproject.IPlayerInterface {
+            private android.os.IBinder mRemote;
+
+            Proxy(android.os.IBinder remote) {
+                mRemote = remote;
+            }
+
+            @Override
+            public android.os.IBinder asBinder() {
+                return mRemote;
+            }
+
+            public java.lang.String getInterfaceDescriptor() {
+                return DESCRIPTOR;
+            }
+
+            /**
+             * Demonstrates some basic types that you can use as parameters
+             * and return values in AIDL.
+             */
+            @Override
+            public void play() throws android.os.RemoteException {
+                android.os.Parcel _data = android.os.Parcel.obtain();
+                android.os.Parcel _reply = android.os.Parcel.obtain();
+                try {
+                    _data.writeInterfaceToken(DESCRIPTOR);
+                    mRemote.transact(Stub.TRANSACTION_play, _data, _reply, 0);
+                    _reply.readException();
+                } finally {
+                    _reply.recycle();
+                    _data.recycle();
+                }
+            }
+
+            @Override
+            public void stop() throws android.os.RemoteException {
+                android.os.Parcel _data = android.os.Parcel.obtain();
+                android.os.Parcel _reply = android.os.Parcel.obtain();
+                try {
+                    _data.writeInterfaceToken(DESCRIPTOR);
+                    mRemote.transact(Stub.TRANSACTION_stop, _data, _reply, 0);
+                    _reply.readException();
+                } finally {
+                    _reply.recycle();
+                    _data.recycle();
+                }
+            }
+        }
+
+        static final int TRANSACTION_play = (android.os.IBinder.FIRST_CALL_TRANSACTION + 0);
+        static final int TRANSACTION_stop = (android.os.IBinder.FIRST_CALL_TRANSACTION + 1);
+    }
+
+    /**
+     * Demonstrates some basic types that you can use as parameters
+     * and return values in AIDL.
+     */
+    public void play() throws android.os.RemoteException;
+
+    public void stop() throws android.os.RemoteException;
+}
+```
+
+其实就是Proxy-Stub的设计模式
+
+
+
+
+
+
+
+
+
+
+
 
 
 
