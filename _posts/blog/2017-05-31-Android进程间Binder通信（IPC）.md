@@ -310,7 +310,29 @@ IMediaDeathNotifier::getMediaPlayerService()
 
 接下去的while循环是通过sm->getService接口来不断尝试获得名称为“media.player”的Service，即MediaPlayerService。为什么要通过这无穷循环来得MediaPlayerService呢？因为这时候MediaPlayerService可能还没有启动起来，所以这里如果发现取回来的binder接口为NULL，就睡眠0.5秒，然后再尝试获取，这是获取Service接口的标准做法。
 
-最终过程是，通过IPCThreadState::talkWithDriver与驱动程序进行交互
+最终过程是，通过IPCThreadState::talkWithDriver与驱动程序进行交互，最终会返回一个BpBinder对象，最后，函数调用：
+
+```c++
+sMediaPlayerService = interface_cast<IMediaPlayerService>(binder);  
+```
+
+从而创建一个BpMediaPlayerService对象：
+
+```c++
+intr = new BpMediaPlayerService(new BpBinder(handle)); 
+```
+
+有了这个BpMediaPlayerService这个远程接口之后，MediaPlayer就可以调用MediaPlayerService的服务了。
+
+### Android系统进程间通信Binder机制在应用程序框架层的Java接口源代码分析
+应用程序框架中的基于Java语言的Binder接口是通过JNI来调用基于C/C++语言的Binder运行库来为Java应用程序提供进程间通信服务的。
+
+主要就是Service Manager、Server和Client这三个角色的实现了。通常，在应用程序中，我们都是把Server实现为Service的形式，并且通过IServiceManager.addService接口来把这个Service添加到Service Manager，Client也是通过IServiceManager.getService接口来获得Service接口，接着就可以使用这个Service提供的功能了，这个与运行时库的Binder接口是一致的。
+
+#### 一.  获取Service Manager的Java远程接口
+
+
+
 
 
 
