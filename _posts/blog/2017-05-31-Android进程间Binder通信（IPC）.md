@@ -443,7 +443,7 @@ sServiceManager = new ServiceManagerProxy(new BinderProxy());
 ```java
 /*
  * This file is auto-generated.  DO NOT MODIFY.
- * Original file: /Users/zerro/AndroidStudioProjects/JNIProject/app/src/main/aidl/com/example/zerro/jniproject/IPlayerInterface.aidl
+ * Original file: /Users/xxx/AndroidStudioProjects/JNIProject/app/src/main/aidl/com/example/zerro/jniproject/IPlayerInterface.aidl
  */
 package com.example.zerro.jniproject;
 // Declare any non-default types here with import statements
@@ -568,8 +568,59 @@ public interface IPlayerInterface extends android.os.IInterface {
 }
 ```
 
-其实就是Proxy-Stub的设计模式
+其实就是**Proxy-Stub**的设计模式。
 
+实现这个MyService的Server必须继续于这里的IPlayerInterface.Stub类，而这个IPlayerInterface的远程接口就是这里的IPlayerInterface.Stub.Proxy对象获得的IPlayerInterface接口。
+
+#### Client获取HelloService的Java远程接口的过程
+我们看看它是如何借助Service Manager这个Java远程接口来获得IPlayerInterface的远程接口的。在Hello这个Activity的onCreate函数，通过IServiceManager.getService函数来获得HelloService的远程接口：
+
+```java
+public class Hello extends Activity implements OnClickListener {  
+	...... 
+
+	private IHelloService helloService = null;  
+
+	......
+
+	@Override  
+	public void onCreate(Bundle savedInstanceState) {  
+
+		helloService = IHelloService.Stub.asInterface(  
+							ServiceManager.getService("hello"));
+	}
+
+	......
+}
+```
+
+我们先来看ServiceManager.getService的实现。前面我们说过，这里实际上是调用了ServiceManagerProxy.getService函数
+
+```java 
+class ServiceManagerProxy implements IServiceManager {
+	public ServiceManagerProxy(IBinder remote) {
+		mRemote = remote;
+	}
+
+	......
+
+	public IBinder getService(String name) throws RemoteException {
+		Parcel data = Parcel.obtain();
+		Parcel reply = Parcel.obtain();
+		data.writeInterfaceToken(IServiceManager.descriptor);
+		data.writeString(name);
+		mRemote.transact(GET_SERVICE_TRANSACTION, data, reply, 0);
+		IBinder binder = reply.readStrongBinder();
+		reply.recycle();
+		data.recycle();
+		return binder;
+	}
+
+	......
+
+	private IBinder mRemote;
+}
+```
 
 
 
